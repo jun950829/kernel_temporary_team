@@ -72,3 +72,56 @@
 
 - useMemo: 큰 배열의 변경, 비싼 연산의 경우 사용하는 훅
 - useCallback: 리렌더링 사이에 콜백 함수를 캐싱하는 훅
+
+
+## useEffect
+
+- 컴포넌트의 생명 주기 동안 side effect를 처리하는 훅
+
+```
+const MyComponent = () => {
+    useEffect(() => {
+        // side-effect code
+        console.log('Component did mount or update');
+        
+        return (() => {
+            console.log('Component will unmount or before next effect');
+        };
+    }, [ /* 의존성 배열 */]
+
+    return <div>test<div>;
+}
+
+```
+
+1. data fetching
+2. dom 이벤트 리스너 추가 및 제거
+3. 타이머 설정 및 해제
+
+### 주의 사항
+의존성 배열 관리
+1. 필요한 모든 의존성을 포함해야한다.
+2. 무한 루프 방지
+
+### React Hook flow 
+1. Mount ( Run lazy initializers )
+useEffect나 useReducer와 같은 상태 초기화가 필요한 훅으로 인해 상태 초기화가 먼저 일어나고
+초기화된 상태를 기반으로 렌더링 이후 커밋 단계에서 리액트는 돔에 해당 변경 사항들을 반영하게 되는데
+현재 메인 스레드를 리액트가 사용하고 있어서 돔에는 반영되었지만 브라우저에 렌더링 되진않음
+그 상태로 화면이 그려지기전에 useLayoutEffect에 작성된 내용이 실행되고 그다음 브라우저가 화면을 그림
+마지막으로 useEffect에 작성된 내용 실행
+
+
+2. Update
+상태 초기화 로직 실행되지 않음. 변경된 상태를 기반으로 렌더링
+render -> React updates DOM -> Cleanup LayoutEffects -> Run LayoutEffects -> Browser paints screen -> Cleanup Effects -> Run Effects
+
+3. Unmount
+useLayoutEffect의 hook 정리 함수 실행 useEffect의 정리 함수 실행
+
+
+### useLayoutEffect가 useEffect보다 먼저 실행되는 이유
+-> useLayoutEffect는 DOM 변경 사항이 화면에 그려지기 전에 동기적으로 실행되고 useEffect는 비동기적으로 실행되기전에 스케쥴러에 요청되므로 DOM이 화면에 그려진다음에 브라우저의 메인 스레드를 차지
+
+### 부모 컴포넌트의 렌더링, useEffect와 자식컴포넌트의 랜더링, useEffect는 어떤 순서로 진행되는가
+-> root부터 첫 번째 child를 탐색하면서 렌더링이 시작되고 더 이상 child를 찾지 못하면 sibling node로 건너가서 다음 child를 탐색하는 방향으로 진행. 렌더링 단계가 끝나면 자식부터 root까지 올라가면서 변경사항 등을 반영하고 effect를 실행하는 작업이 진행

@@ -24,3 +24,44 @@ Servlet Container가 필요 - Tomcat, Jetty, Undertow
 Spring 프레임워크에서 제공하는 웹 애플리케이션 개발을 위한 모듈입니다.
 Spring MVC를 기반으로 하며, 웹 개발을 위한 컨트롤러, 서비스, 뷰 등을 쉽게 구성할 수 있도록 지원합니다.
 REST API 개발을 위해 Spring Web + Spring Boot 조합이 많이 사용됩니다.
+
+
+
+### Validation
+model를 세팅할 때 유효성 검증하는 어노테이션을 추가하여 controller에서 요청 req object에 @Valid 어노테이션을 통해 각각 model에서 걸어놓은 유효성 검증 절차를 밟게함
+
+- 사용 이유
+1. 유효성 검증하는 코드의 길이가 너무 길다.
+2. service logic에 대해 방해
+3. 흩어져 있는 경우 어디서 검증 되었는지 찾기 힘듬
+4. 검증 로직이 변경되는 경우 테스트 코드 등, 전체 로직이 흔들릴 수 있음
+
+- 종류
+
+||||
+|----|----|----|
+|@Size|문자 길이 측정| int Type 불가|
+|@NotNull|null불가||
+|@NotEmpty|null, ""불가||
+|@NotBlank|null, ""불가, " " 불가||
+|@Pattern|정규식 적용||
+|@Max|최대값||
+|@Min|최소값||
+|@AssertTrue / False|별도 Logic적용||
+|@Valid | 해당 object validation 실행||
+|@AssertTrue / False|별도 Logic적용||
+|@Past|과거 날짜||
+|@PastOrPresent|오늘이거나 과거||
+|@Future|미래 날짜||
+|@FutureOrPresent|오늘이거나 미래||
+
+
+## Memory Database
+DataBase : 데이터의 저장소
+DBMS ( DataBase Management System ): 데이터 베이스를 운영하고 관리하는 소프트웨어
+
+### Repository
+데이터가 저장되는 저장소와 연결되는 인터페이스 
+
+Repository는 데이터베이스(DB)와 애플리케이션 비즈니스 로직 사이에서 데이터를 관리하는 계층입니다.
+즉, 데이터베이스와 직접 상호작용하는 객체이며, CRUD(Create, Read, Update, Delete) 작업을 추상화하여 처리합니다.
