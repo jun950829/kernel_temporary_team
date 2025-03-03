@@ -125,3 +125,95 @@ useLayoutEffect의 hook 정리 함수 실행 useEffect의 정리 함수 실행
 
 ### 부모 컴포넌트의 렌더링, useEffect와 자식컴포넌트의 랜더링, useEffect는 어떤 순서로 진행되는가
 -> root부터 첫 번째 child를 탐색하면서 렌더링이 시작되고 더 이상 child를 찾지 못하면 sibling node로 건너가서 다음 child를 탐색하는 방향으로 진행. 렌더링 단계가 끝나면 자식부터 root까지 올라가면서 변경사항 등을 반영하고 effect를 실행하는 작업이 진행
+
+
+
+# 상태관리
+
+## Redux
+
+Action -> Reducer -> Store -> View
+redux에서는 state를 변경하기 위해서 view 단에서 이벤트가 발생한 경우 action creater에서 action을 생성하여 reducer에 전달하고, reducer에서는 action에 타입에 따라 어떻게 상태가 변경되어야할지 기록 되어있음. 변경된 state는 store에 저장되고 store는 view 단에 변경된 state를 전달 -> 이렇게 데이터가 단방향으로 흐르는 것을 flux 패턴이라고함
+단점은 수많은 보일러 플레이트이다.
+
+-> 그래서 duck pattern이 나옴
+redux 애플리케이션에서 액션 타입, 액션 생성자, 리듀서, 그리고 초기 상태를 한 파일에 그룹화 하여 모듈화하는 패턴
+action creator들을 함수로 export 해야함
+```
+const INCREMENT = 'counter/INCREMENT'; // reducer/ACTION_TYPE
+
+// 액션 생성자
+export const increment = () => ({
+    type: INCREMENT,
+});
+
+//초기 상태
+const initialState = {
+    count: 0,
+}
+
+// 리듀서
+export default function reducer(state = initialState, action) {
+    switch(action.type) {
+        case INCREMENT:
+            return {
+                ...state,
+                count: state.count + 1
+        default:
+            return state;
+    }
+}
+
+```
+
+### Redux middleware
+액션을 디스패치하는 순간과 리듀서에 도달하는 순간 사이에 확장지점을 제공
+ex) 로깅, 충돌보고, 비동기 API 통신, 라우팅 등
+
+#### Redux-thunk vs Redux-saga
+- Redux-thunk : 쉽게 비동기 로직을 처리, action타입 일관성이 떨어짐, 로직이 복잡해질수록 thunk 함수 내에서 비동기 흐름을 관리하기 어려워짐
+```
+const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
+
+function increment() {
+    return {
+        type: INCREMENT_COUNTER
+    }
+}
+
+function incrementAsync() {
+    return dispatch => {
+        setTimeout(() => {
+            // Can invoke sync or async actions with dispatch
+            dispaych(increment())
+        }, 1000)
+    }
+}
+```
+
+- Redux-saga
+action을 가로채서 side effect로직을 선언적으로 작성하게 도와주는 미들웨어
+
+```
+function UserComponent({userid} : {userID: number}) {
+    const dispatch = useDispatch();
+    
+    const onSomeButtonClicked = () => {
+        dispatch({type: 'USER_FETCH_REQUESTED', payload: { userId }})
+    } 
+}
+
+function* fetchUser(action) {
+    try {
+        const user = yield call(Api.fetchUser, action.payload.userId);
+        yield put({type: 'USER_FETCH_SECCEDDED', user: user});
+    } catch(e) {
+        yield put({type: 'USER_FETCH_FAILED', message: e.message});
+    }
+}
+
+function* mySage() {
+    yield takeEvery("USER_FETCH_REQUESTED", fetchUser);
+}    
+
+```
